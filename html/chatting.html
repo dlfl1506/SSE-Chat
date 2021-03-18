@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        width: 80%;
+        margin: 0 auto;
+      }
+      .chat-list {
+        width: 300px;
+        height: 300px;
+        padding-left: 10px;
+        padding-top: 10px;
+        overflow-y: scroll;
+        border: 1px solid black;
+      }
+      p {
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="chat-list" id="chatList"></div>
+      <div class="input">
+        <div><input id="username" type="text" placeholder="유저네임을 입력하세요"/></div>
+        <div><input id="msg" type="text" placeholder="메세지를 입력하세요"/></div>
+        <div><button id="btn-send">전송</button></div>
+      </div>
+    </div>
+    <script>
+      document.querySelector("#btn-send").addEventListener("click", () => {
+        let username = document.querySelector("#username").value;
+        let msg = document.querySelector("#msg").value;
+        let data = username + ":" + msg;
+        fetch("http://localhost:8080/send?username=" + username + "&msg=" + msg)
+          .then((res) => res.text())
+          .then((res) => {
+            let element_p = document.createElement("p");
+            chatList.appendChild(element_p);
+            document.querySelector("#msg").value = "";
+          });
+      });
+
+      const chatList = document.querySelector("#chatList");
+      const eventSource = new EventSource(`http://localhost:8080/sse`);
+      eventSource.onmessage = (event) => {
+          let element_p = document.createElement("p");
+          element_p.textContent = event.data;
+          chatList.appendChild(element_p);
+      };
+      eventSource.onerror = (error) => {
+        eventSource.close();
+      };
+    </script>
+  </body>
+</html>
